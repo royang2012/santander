@@ -7,13 +7,20 @@ test_df = pd.read_csv('./input/test_ver2.csv')
 train_df.set_index(['ncodpers'], inplace=True)
 # test_df.set_index(['ncodpers'], inplace=True)
 
-# new_train_df = train_df.ix[15889]
+first_df = train_df.ix[15889]
+#
+# train_df['keep'] = pd.Series(np.zeros(train_df.shape[0]), index=train_df.index)
+i = 1
+temp = test_df['ncodpers'][i]
+train_list = [first_df, train_df.ix[temp]]
+for i in tqdm(range(2, 20)):
+    temp_idx = test_df['ncodpers'][i]
+    temp_df = train_df.ix[temp_idx]
+    if temp_df.shape[0] == 17:
+        # new_train_df = [new_train_df, train_df.ix[temp]]
+        # train_list.append(temp_df)
+        flat = True
+    # train_df.set_value(temp, 'keep', train_df.ix[temp].shape[0] - 16)
 
-train_df['keep'] = pd.Series(np.zeros(train_df.shape[0]), index=train_df.index)
-
-for i in tqdm(range(1, test_df.shape[0])):
-    temp = test_df['ncodpers'][i]
-    # if train_df.ix[temp].shape[0] == 17:
-    #     train_df.ix[temp].keep
-    train_df.set_value(temp, 'keep', train_df.ix[temp].shape[0] - 16)
-
+new_train_df = pd.concat(train_list)
+new_train_df.to_csv('./input/train17.csv')
