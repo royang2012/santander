@@ -4,7 +4,7 @@
 import pandas as pd
 import sqlite3 as sql
 
-connectionPath = "./santander_data.db"
+connectionPath = "../santander_data.db"
 santanderCon = sql.connect(connectionPath)
 
 # train_data = pd.read_sql("select * from santander_train limit 5", santanderCon)

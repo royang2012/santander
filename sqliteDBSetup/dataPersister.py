@@ -1,13 +1,6 @@
 import sqlite3 as sql
-
 import pandas as pd
-import pandas.io.sql as pd_sql
-from sqlalchemy import create_engine  # database connection
 import datetime as dt
-from IPython.display import display
-
-import plotly.plotly as py  # interactive graphing
-from plotly.graph_objs import Bar, Scatter, Marker, Layout
 
 
 
