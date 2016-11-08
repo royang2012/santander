@@ -17,4 +17,4 @@ for i in tqdm(range(1, train_df.shape[0])):
     last_idx = train_df.ix[i].ncodpers
 
 train_17_df = pd.concat(train_list)
-train_17_df.to_csv('./input/sorted_17_train.csv',index=False)
+train_17_df.to_csv('./input/sorted_17_train.csv', index=False)

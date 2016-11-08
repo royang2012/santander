@@ -25,3 +25,6 @@ santanderCon = sql.connect(connectionPath)
 
 aggregate_by_idx = "select ncodpers, count(*) from santander_train group by ncodpers"
 print pd.read_sql(aggregate_by_idx, santanderCon)
+
+
+count_by_date = " select count(distinct ncodpers) from santander_test group by fecha_dato"
