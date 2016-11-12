@@ -1,9 +1,9 @@
 from tqdm import tqdm
 import pandas as pd
 
-train_df = pd.read_csv('./input/train_ver2.csv')
+train_df = pd.read_csv('../input/train_ver2.csv')
 
-test_df = pd.read_csv('./input/test_ver2.csv')
+test_df = pd.read_csv('../input/test_ver2.csv')
 
 # index_userId = 'ncodpers'
 # index_fetch_date = 'fecha_dato'

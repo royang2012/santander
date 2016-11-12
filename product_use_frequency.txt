@@ -1,0 +1,51 @@
+sum(ind_cco_fin_ult1)   0.656272
+sum(ind_ctop_fin_ult1)  0.129181
+sum(ind_recibo_ult1)    0.128110
+sum(ind_ecue_fin_ult1)  0.082824
+sum(ind_cno_fin_ult1)   0.080988
+sum(ind_nom_pens_ult1)  0.059463
+sum(ind_nom_pens_ult1)  0.059463
+sum(ind_nomina_ult1)    0.054756
+sum(ind_reca_fin_ult1)  0.051896
+sum(ind_tjcr_fin_ult1)  0.044463
+sum(ind_ctpp_fin_ult1)  0.043368
+sum(ind_dela_fin_ult1)  0.043042
+sum(ind_valo_fin_ult1)  0.025648
+sum(ind_fond_fin_ult1)  0.018514
+sum(ind_ctma_fin_ult1)  0.009711
+sum(ind_ctju_fin_ult1)  0.009475
+sum(ind_hip_fin_ult1)   0.005883
+sum(ind_viv_fin_ult1)   0.003854
+sum(ind_pres_fin_ult1)  0.002535
+sum(ind_deco_fin_ult1)  0.001750
+sum(ind_deme_fin_ult1)  0.001664
+sum(ind_cder_fin_ult1)  0.000394
+sum(ind_ahor_fin_ult1)  0.000102
+sum(ind_aval_fin_ult1)  0.000023
+
+// added in 2016-05-28
+ind_ahor_fin_ult1       82.0     84.0
+ind_aval_fin_ult1       21.0     20.0
+ind_cco_fin_ult1     93878.0  92442.0
+ind_cder_fin_ult1      311.0    310.0
+ind_cno_fin_ult1     53995.0  52871.0
+ind_ctju_fin_ult1     7142.0   7150.0
+ind_ctma_fin_ult1     4805.0   5144.0
+ind_ctop_fin_ult1    57649.0  57262.0
+ind_ctpp_fin_ult1    26893.0  26956.0
+ind_deco_fin_ult1     1522.0   1738.0
+ind_deme_fin_ult1     1458.0   1497.0
+ind_dela_fin_ult1    31473.0  31100.0
+ind_ecue_fin_ult1    52721.0  51778.0
+ind_fond_fin_ult1    14064.0  13845.0
+ind_hip_fin_ult1      4625.0   4777.0
+ind_plan_fin_ult1     6957.0   6991.0
+ind_pres_fin_ult1     2034.0   2030.0
+ind_reca_fin_ult1    33776.0  33498.0
+ind_tjcr_fin_ult1    31596.0  31814.0
+ind_valo_fin_ult1    18230.0  18200.0
+ind_viv_fin_ult1      3092.0   3088.0
+ind_nomina_ult1      36867.0  37587.0
+ind_nom_pens_ult1    37366.0  41106.0
+ind_recibo_ult1      75132.0  76553.0
+

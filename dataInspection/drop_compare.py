@@ -2,8 +2,8 @@
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
-train_df = pd.read_csv('./input/train_ver2.csv')
-test_df = pd.read_csv('./input/test_ver2.csv')
+train_df = pd.read_csv('../input/train_ver2.csv')
+test_df = pd.read_csv('../input/test_ver2.csv')
 
 train_df.set_index(['ncodpers'], inplace=True)
 # test_df.set_index(['ncodpers'], inplace=True)
