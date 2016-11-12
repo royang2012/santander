@@ -6,7 +6,7 @@ import pandas as pd
 #
 # import matplotlib.pyplot as plt
 
-connectionPath = "../santander_data.db"
+connectionPath = "./santander_data.db"
 santanderCon = sql.connect(connectionPath)
 
 Saving_Account = "ind_ahor_fin_ult1"
@@ -65,7 +65,7 @@ product_used_df = pd.read_sql("select "
 print product_used_df.shape
 transposed_df = product_used_df.transpose()
 sorted_df = transposed_df.sort_values(by = 0, axis = 0, ascending = False)
-sorted_df = sorted_df / 13647309
+sorted_df = sorted_df / train_total_count.ix[0, 0]
 print sorted_df
 # count_by_age["age"] = pd.to_numeric(count_by_age["age"], errors="coerce")
 #
