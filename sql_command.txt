@@ -1,0 +1,39 @@
+select * from santander_train where ind_empleado is NULL group by ncodpers 
+delete from santander_train where age = 'NA' and sexo is NULL
+select * from santander_train where ncodpers = 17025
+select * from santander_train where age not regexp '[0-9]+' 
+select count(distinct ncodpers) from santander_train where age not regexp '[0-9]+' 
+select * from santander_train where fecha_alta is NULL and age regexp '[0-9]+'
+select distinct tipodom from santander_train limit 3
+
+// excecuated on 2016-11-09
+delete from santander_train where age not regexp '[0-9]+'
+delete from santander_train where ncodpers = 41449
+
+update santander_train
+set sexo = 'H' 
+where sexo is NULL;
+
+update santander_train
+set indrel = 2
+where indrel = 99
+
+update santander_train
+set indrel_1mes = 5
+where indrel_1mes = 'P' or indrel_1mes is NULL
+
+update santander_train
+set tiprel_1mes = 'I'
+where tiprel_1mes is NULL
+
+update santander_train
+set renta = 101490.5
+where renta is NULL
+
+update santander_train
+set renta = 101490.5
+where renta is NULL
+
+update santander_train
+set segmento = '02 - PARTICULARES'
+where segmento is NULL
