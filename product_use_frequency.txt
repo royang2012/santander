@@ -24,28 +24,53 @@ sum(ind_ahor_fin_ult1)  0.000102
 sum(ind_aval_fin_ult1)  0.000023
 
 // added in 2016-05-28
-ind_ahor_fin_ult1       82.0     84.0
-ind_aval_fin_ult1       21.0     20.0
-ind_cco_fin_ult1     93878.0  92442.0
-ind_cder_fin_ult1      311.0    310.0
-ind_cno_fin_ult1     53995.0  52871.0
-ind_ctju_fin_ult1     7142.0   7150.0
-ind_ctma_fin_ult1     4805.0   5144.0
-ind_ctop_fin_ult1    57649.0  57262.0
-ind_ctpp_fin_ult1    26893.0  26956.0
-ind_deco_fin_ult1     1522.0   1738.0
-ind_deme_fin_ult1     1458.0   1497.0
-ind_dela_fin_ult1    31473.0  31100.0
-ind_ecue_fin_ult1    52721.0  51778.0
-ind_fond_fin_ult1    14064.0  13845.0
-ind_hip_fin_ult1      4625.0   4777.0
-ind_plan_fin_ult1     6957.0   6991.0
-ind_pres_fin_ult1     2034.0   2030.0
-ind_reca_fin_ult1    33776.0  33498.0
-ind_tjcr_fin_ult1    31596.0  31814.0
-ind_valo_fin_ult1    18230.0  18200.0
-ind_viv_fin_ult1      3092.0   3088.0
-ind_nomina_ult1      36867.0  37587.0
-ind_nom_pens_ult1    37366.0  41106.0
-ind_recibo_ult1      75132.0  76553.0
+ind_ahor_fin_ult1        1.0
+ind_aval_fin_ult1        0.0
+ind_cco_fin_ult1      3854.0
+ind_cder_fin_ult1        5.0
+ind_cno_fin_ult1      2346.0
+ind_ctju_fin_ult1       40.0
+ind_ctma_fin_ult1      512.0
+ind_ctop_fin_ult1      226.0
+ind_ctpp_fin_ult1      131.0
+ind_deco_fin_ult1        0.0
+ind_deme_fin_ult1        0.0
+ind_dela_fin_ult1       46.0
+ind_ecue_fin_ult1     2709.0
+ind_fond_fin_ult1       60.0
+ind_hip_fin_ult1         3.0
+ind_plan_fin_ult1       22.0
+ind_pres_fin_ult1        7.0
+ind_reca_fin_ult1      279.0
+ind_tjcr_fin_ult1     4248.0
+ind_valo_fin_ult1      183.0
+ind_viv_fin_ult1         7.0
+ind_nomina_ult1       5488.0
+ind_nom_pens_ult1     5513.0
+ind_recibo_ult1      10163.0
 
+// product added in 2016-04-28
+ind_ahor_fin_ult1       0.0
+ind_aval_fin_ult1       0.0
+ind_cco_fin_ult1     4027.0
+ind_cder_fin_ult1       5.0
+ind_cno_fin_ult1     2381.0
+ind_ctju_fin_ult1      40.0
+ind_ctma_fin_ult1     596.0
+ind_ctop_fin_ult1     240.0
+ind_ctpp_fin_ult1     161.0
+ind_deco_fin_ult1       0.0
+ind_deme_fin_ult1       0.0
+ind_dela_fin_ult1      99.0
+ind_ecue_fin_ult1    2249.0
+ind_fond_fin_ult1      83.0
+ind_hip_fin_ult1        5.0
+ind_plan_fin_ult1      21.0
+ind_pres_fin_ult1       4.0
+ind_reca_fin_ult1     807.0
+ind_tjcr_fin_ult1    4100.0
+ind_valo_fin_ult1     128.0
+ind_viv_fin_ult1        3.0
+ind_nomina_ult1      3790.0
+ind_nom_pens_ult1    4424.0
+ind_recibo_ult1      9799.0
