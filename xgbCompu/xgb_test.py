@@ -20,34 +20,34 @@ length = pre_month_df.shape[0]
 diff_df = pre_month_df.ix[:, 25:49] - cur_month_df.ix[:, 25:49]
 added_df = diff_df[diff_df == 1]
 
+# delete unwanted columns
 del pre_month_df['fecha_alta']
 del pre_month_df['ult_fec_cli_1t']
 del pre_month_df['canal_entrada']
 del pre_month_df['nomprov']
+# force two columns to be numerical
 pre_month_df['age'] = pd.to_numeric(pre_month_df['age'], errors='coerce')
 pre_month_df['antiguedad'] = pd.to_numeric(pre_month_df['antiguedad'], errors='coerce')
 
-
-# del pre_month_df['segmento']
-# train_data = pre_month_df.ix[0:length*0.8, 1:].values
-# test_data = pre_month_df.ix[length*0.8:, 1:].values
+# find the data type for each column
 dtype_list = pre_month_df.dtypes
-# numerical_list = dtype_list[dtype_list == 'object']
-# dummy_list = dtype_list[dtype_list != 'object']
 numerical_list = []
 dummy_list = []
 num_df = []
+# separate numerical and non-numerical columns
 for i in range(3, pre_month_df.shape[1]):
     if(dtype_list[i] == 'object'):
         dummy_list.append(pre_month_df.columns[i])
     else:
         numerical_list.append(pre_month_df.columns[i])
 
+# convert obejcts to One-hot-vector and combine the features
 num_df = pre_month_df[numerical_list]
 num_df = pd.concat([num_df, pd.get_dummies(pre_month_df[dummy_list])], axis=1)
 
-train_data = num_df.ix[0:length*0.8, 1:].values
-test_data = num_df.ix[length*0.8:, 1:].values
+# use the first 80% of customers for training and the last 20% for validation
+train_data = num_df.ix[0:length*0.8, 0:].values
+test_data = num_df.ix[length*0.8:, 0:].values
 
 train_X = train_data
 train_Y = np.nan_to_num(added_df.ix[0:length*0.8, 6].values)
@@ -62,17 +62,18 @@ param = {}
 # use softmax multi-class classification
 param['objective'] = 'multi:softmax'
 # scale weight of positive examples
-param['eta'] = 0.1
+param['eta'] = 0.3
 param['max_depth'] = 12
 param['silent'] = 1
 param['nthread'] = 4
 param['num_class'] = 2
 
 watchlist = [ (xg_train,'train'), (xg_test, 'test') ]
-num_round = 3
+num_round = 30
 bst = xgb.train(param, xg_train, num_round, watchlist );
 # get prediction
 pred = bst.predict( xg_test );
+
 
 print ('predicting, classification error=%f' % (sum( int(pred[i]) != test_Y[i] for i in range(len(test_Y))) / float(len(test_Y)) ))
 print ('all zero guess error=%f' %(np.sum(test_Y)/test_Y.shape[0]))
