@@ -1,0 +1,5 @@
+# current ideas about the projects
+
+# use ensemble methods: the trained model will probably give too many zeros. Instead of majority vote, set a product to
+# 1 once one model(tree) in the ensemble is 1. After that, we need to check 2016-05-28 data and uncheck the product that
+# are already used in May.

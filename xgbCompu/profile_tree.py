@@ -25,10 +25,14 @@ del pre_month_df['fecha_alta']
 del pre_month_df['ult_fec_cli_1t']
 del pre_month_df['canal_entrada']
 del pre_month_df['nomprov']
+
 # force two columns to be numerical
 pre_month_df['age'] = pd.to_numeric(pre_month_df['age'], errors='coerce')
 pre_month_df['antiguedad'] = pd.to_numeric(pre_month_df['antiguedad'], errors='coerce')
 
+# delete all product used info from the dataframe
+product_column_list = np.arange(21,45)
+pre_month_df.drop(pre_month_df.columns[product_column_list], axis=1, inplace=1)
 # find the data type for each column
 dtype_list = pre_month_df.dtypes
 numerical_list = []
@@ -60,16 +64,18 @@ xg_test = xgb.DMatrix(test_X, label=test_Y)
 # setup parameters for xgboost
 param = {}
 # use softmax multi-class classification
-param['objective'] = 'multi:softmax'
+# param['objective'] = 'multi:softmax'
+param['objective'] = 'binary:logistic'
+
 # scale weight of positive examples
 param['eta'] = 0.1
 param['max_depth'] = 5
 param['silent'] = 1
 param['nthread'] = 4
-param['num_class'] = 2
+# param['num_class'] = 2
 
 watchlist = [ (xg_train,'train'), (xg_test, 'test') ]
-num_round = 30
+num_round = 20
 bst = xgb.train(param, xg_train, num_round, watchlist );
 # get prediction
 pred = bst.predict( xg_test );
