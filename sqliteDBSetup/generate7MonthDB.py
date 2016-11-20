@@ -34,16 +34,19 @@ for i in tqdm(range(1, train_df.shape[0])):
             if month_count == 6:
                 over7 = 1
             if train_df.ix[i].fecha_dato == '2015-01-28':
-                current_customer = train_df.ix[i-month_count:i, 2:]
+                current_customer = train_df.ix[i-month_count:i, 1:]
                 current_customer.to_sql('santander_train7', santanderCon, if_exists='append')
                 appended = 1
         else:
             if over7 == 1:
                 if appended == 0:
-                    current_customer = train_df.ix[i-month_count:i-1, 2:]
+                    current_customer = train_df.ix[i-month_count-1:i-1, 1:]
                     current_customer.to_sql('santander_train7', santanderCon, if_exists='append')
                     appended = 1
     else:
+        if over7 == 1 and appended == 0:
+            current_customer = train_df.ix[i-month_count-1:i-1, 1:]
+            current_customer.to_sql('santander_train7', santanderCon, if_exists='append')
         date_count = 0
         month_count = 0
         over7 = 0
