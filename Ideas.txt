@@ -3,3 +3,11 @@
 # use ensemble methods: the trained model will probably give too many zeros. Instead of majority vote, set a product to
 # 1 once one model(tree) in the ensemble is 1. After that, we need to check 2016-05-28 data and uncheck the product that
 # are already used in May.
+
+# To-do-list for Nov 19&20 2016
+# 1. Generate a test result set and save the data set to santander_data.db. The test set should contain: 1) ncodpers for
+# validation purpose, 2) a 25'd vector containing the binary product added infomation, 3) a column that sums the total
+# number of products added
+# 2. Write a cross-validation script to test trained model on result set. The script should do 1) read in both resuslt
+# set and the predicted added products, 2) compute the prediction score. 
+
