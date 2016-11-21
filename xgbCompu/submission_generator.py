@@ -79,7 +79,7 @@ def recommend_products(product_dict, product_freq, all_users_current_products, m
             if np.isclose(all_users_current_products.ix[i].product, 0.0):
                 rn = random.random()
                 print "probability to be added: {}, actually {}".format(product_freq.ix[product], rn)
-                if rn < product_freq.ix[product]:
+                if rn < product_freq.ix[product]*10:
                     added_products.append(product)
             if len(added_products) == maximum:
                 break

@@ -4,7 +4,7 @@ from tqdm import tqdm
 connectionPath = "../santander_data.db"
 santanderCon = sql.connect(connectionPath)
 
-table_name = 'santander_train'
+# table_name = 'santander_train'
 # drop_statement = "drop table if exists " + table_name
 # santanderCon.execute(drop_statement)
 

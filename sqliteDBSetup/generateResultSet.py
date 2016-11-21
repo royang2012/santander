@@ -1,3 +1,4 @@
+# generate added products on 2016-05-28 for cross-validation
 import sqlite3 as sql
 import pandas as pd
 from tqdm import tqdm
@@ -7,9 +8,9 @@ santanderCon = sql.connect(connectionPath)
 sqlStatement = "drop table if exists added1605"
 santanderCon.execute(sqlStatement)
 # read customer data from the last two months from the training set
-select_statement = "select * from santander_train7 strain where fecha_dato = '2016-04-28' order by ncodpers"
+select_statement = "select * from santander_train7 strain where fecha_dato = '2016-05-28' order by ncodpers"
 train_df = pd.read_sql(select_statement, santanderCon)
-select_statement_2 = "select * from santander_train7 strain where fecha_dato = '2016-03-28' order by ncodpers"
+select_statement_2 = "select * from santander_train7 strain where fecha_dato = '2016-04-28' order by ncodpers"
 train_df2 = pd.read_sql(select_statement_2, santanderCon)
 
 # compute the difference
