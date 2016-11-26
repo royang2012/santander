@@ -1,81 +1,82 @@
 # In this test training model, the training data is chosen to be a time series of 6 months history
+# To save memory space, more columns are deleted. Also, all the numerical values are passed as int
+
 import pandas as pd
 import sqlite3 as sql
 import xgboost as xgb
 import numpy as np
+# from dataPrepa import deleteColumns, convertNum, xgbDataGen
 connectionPath = "../santander_data.db"
 santanderCon = sql.connect(connectionPath)
-
-# feature_df = pd.read_sql("select * from santander_train7" +
+#
+# feature_df = pd.read_sql("select * from santander_train7 " +
 #                             "where fecha_dato in ('2016-04-28', '2016-03-28', '2016-02-28', '2016-01-28', "
-#                             "'2016-12-28', '2016-11-28')" +
+#                             "'2015-12-28', '2015-11-28') " +
 #                             "order by ncodpers, fecha_dato DESC", santanderCon)
-
-last_month_df = pd.read_sql("select * from santander_train7 where " +
+pred_month_df = pd.read_sql("select * from santander_train7 where " +
                             "fecha_dato = '2016-05-28' order by ncodpers", santanderCon)
-secl_month_df = pd.read_sql("select * from santander_train7 where " +
+last_month_df = pd.read_sql("select * from santander_train7 where " +
                             "fecha_dato = '2016-04-28' order by ncodpers", santanderCon)
+secl_month_df = pd.read_sql("select * from santander_train7 where " +
+                            "fecha_dato = '2016-03-28' order by ncodpers", santanderCon)
 
 diff_df = last_month_df.ix[:, 25:49] - secl_month_df.ix[:, 25:49]
 output_df = diff_df[diff_df == 1]
 output_df = output_df.fillna(0)
 
-length = pre_month_df.shape[0]
+# length = pre_month_df.shape[0]
 
-diff_df = pre_month_df.ix[:, 25:49] - cur_month_df.ix[:, 25:49]
-added_df = diff_df[diff_df == 1]
+# clean the data
+deleteColumns(last_month_df)
+deleteColumns(pred_month_df)
 
-# delete unwanted columns
-del pre_month_df['fecha_alta']
-del pre_month_df['ult_fec_cli_1t']
-del pre_month_df['canal_entrada']
-del pre_month_df['nomprov']
 # force two columns to be numerical
-pre_month_df['age'] = pd.to_numeric(pre_month_df['age'], errors='coerce')
-pre_month_df['antiguedad'] = pd.to_numeric(pre_month_df['antiguedad'], errors='coerce')
+convertNum(last_month_df)
+convertNum(pred_month_df)
 
 # find the data type for each column
-dtype_list = pre_month_df.dtypes
+dtype_list = last_month_df.dtypes
 numerical_list = []
 dummy_list = []
 num_df = []
 # separate numerical and non-numerical columns
-for i in range(3, pre_month_df.shape[1]):
+for i in range(3, last_month_df.shape[1]):
     if(dtype_list[i] == 'object'):
-        dummy_list.append(pre_month_df.columns[i])
+        dummy_list.append(last_month_df.columns[i])
     else:
-        numerical_list.append(pre_month_df.columns[i])
+        numerical_list.append(last_month_df.columns[i])
+
+# define the product to predict
+predict_product = 'ind_ctop_fin_ult1'
 
 # convert obejcts to One-hot-vector and combine the features
-num_df = pre_month_df[numerical_list]
-num_df = pd.concat([num_df, pd.get_dummies(pre_month_df[dummy_list])], axis=1)
+# For customer features, only one month is enough, so we use data from 2016-04-28
+# note * indexes in numerical_list may change if total number of column changes!
+numerical_list_feature = numerical_list[0: 8]
 
-# use the first 80% of customers for training and the last 20% for validation
-train_data = num_df.ix[0:length*0.8, 0:].values
-test_data = num_df.ix[length*0.8:, 0:].values
+train_X = xgbDataGen(last_month_df, secl_month_df[predict_product], numerical_list_feature, dummy_list)
+train_Y = output_df[predict_product].values
 
-train_X = train_data
-train_Y = np.nan_to_num(added_df.ix[0:length*0.8, 6].values)
-
-test_X = test_data
-test_Y = np.nan_to_num(added_df.ix[length*0.8:, 6].values)
+test_X = xgbDataGen(pred_month_df, last_month_df[predict_product], numerical_list_feature, dummy_list)
+# test_Y = np.nan_to_num(added_df.ix[length*0.8:, 6].values)
 
 xg_train = xgb.DMatrix(train_X, label=train_Y)
-xg_test = xgb.DMatrix(test_X, label=test_Y)
+xg_test = xgb.DMatrix(test_X)
 # setup parameters for xgboost
 param = {}
 # use softmax multi-class classification
-param['objective'] = 'multi:softmax'
+param['objective'] = 'binary:logitraw'
 # scale weight of positive examples
 param['eta'] = 0.1
 param['max_depth'] = 5
 param['silent'] = 1
 param['nthread'] = 4
-param['num_class'] = 2
+# param['num_class'] = 2
 
-watchlist = [ (xg_train,'train'), (xg_test, 'test') ]
-num_round = 30
-bst = xgb.train(param, xg_train, num_round, watchlist );
+# watchlist = [ (xg_train,'train'), (xg_test, 'test')]
+watchlist = [ (xg_train,'train')]
+num_round = 10
+bst = xgb.train(param, xg_train, num_round, watchlist);
 # get prediction
 pred = bst.predict( xg_test );
 

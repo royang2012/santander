@@ -11,3 +11,28 @@
 # 2. Write a cross-validation script to test trained model on result set. The script should do 1) read in both resuslt
 # set and the predicted added products, 2) compute the prediction score. 
 
+most added products over 3 months
+ind_ahor_fin_ult1        1.0
+ind_aval_fin_ult1        0.0
+ind_cco_fin_ult1      8523.0
+ind_cder_fin_ult1       14.0
+ind_cno_fin_ult1      5821.0
+ind_ctju_fin_ult1       75.0
+ind_ctma_fin_ult1      204.0
+ind_ctop_fin_ult1      691.0
+ind_ctpp_fin_ult1      423.0
+ind_deco_fin_ult1        0.0
+ind_deme_fin_ult1        0.0
+ind_dela_fin_ult1      352.0
+ind_ecue_fin_ult1     4805.0
+ind_fond_fin_ult1      205.0
+ind_hip_fin_ult1         9.0
+ind_plan_fin_ult1       56.0
+ind_pres_fin_ult1       18.0
+ind_reca_fin_ult1     1094.0
+ind_tjcr_fin_ult1    12554.0
+ind_valo_fin_ult1      413.0
+ind_viv_fin_ult1        14.0
+ind_nomina_ult1      12915.0
+ind_nom_pens_ult1    13548.0
+ind_recibo_ult1      26615.0

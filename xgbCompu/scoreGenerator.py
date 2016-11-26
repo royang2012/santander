@@ -17,10 +17,19 @@ score = 0
 if predicted_df.shape[0] == truth_df.shape[0]:
     for i in range(0, truth_df.shape[0]):
         real_array = truth_df.ix[i, 1:-2].values
-        predicted_array = predicted_df.ix[i, 1:-2].astype('bool').values
-        score += sum(real_array[predicted_array])/truth_df.ix[i, -2]
+        # predicted_array = predicted_df.ix[i, 1:-2].astype('bool').values
+        s = sum(real_array[predicted_array])
+        if s != 0:
+            score += s/truth_df.ix[i, -2]
 else:
     print "Results shape does not match!"
 
-score /= predicted_df.shape[0]
+score /= truth_df.shape[0]
 print score
+
+score = 0
+for i in tqdm(range(0, truth_df.shape[0])):
+    real_array = truth_df.ix[i, 1:-2].values
+    s = np.dot(real_array, predicted_array)
+    if s != 0:
+        score += s/truth_df.ix[i, -2]
