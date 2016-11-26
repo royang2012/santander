@@ -1,8 +1,8 @@
 import sqlite3 as sql
 import pandas as pd
 import numpy as np
-# import dataPrepa as dP
-# import matplotlib.pyplot as plt
+import dataPrepa as dP
+import matplotlib.pyplot as plt
 # read and prepare data
 connectionPath = "../santander_data.db"
 santanderCon = sql.connect(connectionPath)
@@ -22,12 +22,12 @@ added_df3 = added_df3.fillna(0)
 
 # # # note! # # #
 # lots of feature and 6 products are deleted!
-# dP.deleteProducts(added_df1)
-# dP.deleteProducts(added_df2)
-# dP.deleteProducts(added_df3)
-deleteProducts(added_df1)
-deleteProducts(added_df2)
-deleteProducts(added_df3)
+dP.deleteProducts(added_df1)
+dP.deleteProducts(added_df2)
+dP.deleteProducts(added_df3)
+# deleteProducts(added_df1)
+# deleteProducts(added_df2)
+# deleteProducts(added_df3)
 
 # compute the correlation between added products
 cor1 = np.dot(added_df1.transpose().values, added_df1.values)
