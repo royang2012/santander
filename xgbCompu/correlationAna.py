@@ -37,6 +37,6 @@ cor_matrix = cor1 + cor2 + cor3
 for i in range(0, cor_matrix.shape[0]):
     cor_matrix[i, i] = 0
 
-
+print added_df1.columns
 plt.matshow(cor_matrix, cmap=plt.cm.gray)
 plt.show()
