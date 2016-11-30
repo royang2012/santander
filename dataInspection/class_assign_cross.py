@@ -10,9 +10,12 @@ import numpy as np
 import random
 connectionPath = "../santander_data.db"
 santanderCon = sql.connect(connectionPath)
-select_statement = "select * from santander_out"
-output_df = pd.read_sql(select_statement, santanderCon)
-del output_df['index']
+select_train_out = "select * from santander_out_train"
+train_out_df = pd.read_sql(select_train_out, santanderCon)
+select_vali_out = "select * from santander_out_vali"
+vali_out_df = pd.read_sql(select_vali_out, santanderCon)
+del train_out_df['index']
+del vali_out_df['index']
 def deleteProducts(input_df):
     del input_df['ind_ahor_fin_ult1']
     del input_df['ind_aval_fin_ult1']
@@ -22,18 +25,15 @@ def deleteProducts(input_df):
     del input_df['ind_hip_fin_ult1']
     del input_df['ind_pres_fin_ult1']
     del input_df['ind_viv_fin_ult1']
-deleteProducts(output_df)
+deleteProducts(train_out_df)
+deleteProducts(vali_out_df)
 
 class_set = np.loadtxt('../input/random_class_set1.csv', delimiter=',')
 
-# initialize a 1-D array
-picked_class = np.zeros(output_df.shape[0])
-for i in tqdm(range(0, output_df.shape[0])):
-    # compute the score of each class by dot product
-    class_score = np.dot(output_df.ix[i].values, class_set.transpose())
-    # use the combo 'argwhere' and 'amax' to find all positions of maximum values
+picked_class_train = np.zeros(train_out_df.shape[0])
+for i in tqdm(range(0, train_out_df.shape[0])):
+    class_score = np.dot(train_out_df.ix[i].values, class_set.transpose())
     max_positions = np.argwhere(class_score == np.amax(class_score))
-    # randomly pick one as the new class label
-    picked_class[i] = random.choice(max_positions)[0]
+    picked_class_train[i] = random.choice(max_positions)[0]
 
-np.savetxt("../input/class_out.csv", picked_class, delimiter=",")
+np.savetxt("../input/class_out.csv", picked_class_train, delimiter=",")
