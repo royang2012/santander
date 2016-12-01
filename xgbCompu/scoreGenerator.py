@@ -11,8 +11,8 @@ santanderCon = sql.connect(connectionPath)
 sql_select_truth = "select * from added1605"
 truth_df = pd.read_sql(sql_select_truth, santanderCon)
 
-predicted_df = pd.read_csv('../input/prediction.csv')
-
+# predicted_df = pd.read_csv('../input/prediction.csv')
+predicted_df
 score = 0
 if predicted_df.shape[0] == truth_df.shape[0]:
     for i in range(0, truth_df.shape[0]):

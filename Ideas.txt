@@ -36,3 +36,5 @@ ind_viv_fin_ult1        14.0
 ind_nomina_ult1      12915.0 1
 ind_nom_pens_ult1    13548.0 1
 ind_recibo_ult1      26615.0
+
+trivial prediction score at 2016-05-28: 0.025134363818105434
