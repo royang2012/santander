@@ -8,31 +8,16 @@ from tqdm import tqdm
 connectionPath = "../santander_data.db"
 santanderCon = sql.connect(connectionPath)
 
-# table_name = 'santander_train'
-# drop_statement = "drop table if exists " + table_name
-# santanderCon.execute(drop_statement)
-
 select_statement = "select * from santander_train7 order by ncodpers, fecha_dato DESC"
 train_df = pd.read_sql(select_statement, santanderCon)
 
-# train_df.drop(train_df.index[8], inplace=1)
-# train_df.drop(train_df.index[18], inplace=1)
-# train_df.set_value(8, 'fecha_dato', '123')
-# train_df.set_value(18, 'fecha_dato', '123')
-
-
 product_col_list = train_df.columns[25:49]
 contain_one = lambda x: 1 if (1 in x[product_col_list].values) else 0
+# tell if the customer added any product in the month
 train_df['added'] = (train_df[product_col_list] - train_df[product_col_list].shift(-1)).apply(contain_one, axis=1)
-# train_list = []
-# date_list = ['2016-05-28', '2016-04-28', '2016-03-28', '2016-02-28', '2016-01-28', '2015-12-28', '2015-11-28',
-#              '2015-10-28', '2015-09-28', '2015-08-28', '2015-07-28', '2015-06-28', '2015-05-28', '2015-04-28',
-#              '2015-03-28', '2015-02-28', '2015-01-28']
-# last_idx = 15889
-# month_count = 0
-# date_count = 1  # current index in data_list
-# over7 = 0   # tag if there are over 7 months continuous data
-# appended = 0
+
+
+
 feature_list = []
 output_list = []
 i = 0

@@ -38,3 +38,9 @@ ind_nom_pens_ult1    13548.0 1
 ind_recibo_ult1      26615.0
 
 trivial prediction score at 2016-05-28: 0.025134363818105434
+all-right prediction score: 0.0261852042118
+
+1201_composition of the features: 0-95 are products. 96-102 are num, 103-211 are dummy
+most important features: renta, antiguedad, age, cod_prov
+
+1548840

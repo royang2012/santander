@@ -4,7 +4,7 @@ import sqlite3 as sql
 from tqdm import tqdm
 import numpy as np
 import random
-
+from matplotlib import pyplot
 
 def genRandClass():
     position_list = list(range(16))
@@ -131,7 +131,7 @@ param = {}
 # use softmax multi-class classification
 param['objective'] = 'multi:softprob'
 # scale weight of positive examples
-param['eta'] = 0.11
+param['eta'] = 0.12
 param['max_depth'] = 7
 param['silent'] = 1
 # param['nthread'] = 4
@@ -139,43 +139,44 @@ param['num_class'] = 4
 # # # ********************************************* # # #
 # # # get the hyper-classes labels
 # # # ********************************************* # # #
-num_tree = 10
+num_tree = 1
 p_pred = np.zeros(vali_out_df.shape)
-for iter_tree in tqdm(range(0, num_tree)):
-    hyper_class = genRandClass()
-    train_labels = genClassLabel(train_out_df, hyper_class)
-    # train a tree
-    xg_train = xgb.DMatrix(train_ary, label=train_labels)
-    watchlist = [ (xg_train,'train')]
-    num_round = 2000
-    bst = xgb.train(param, xg_train, num_round, watchlist );
-    # get prediction
-    xg_test = xgb.DMatrix(vali_ary)
-    hc_pred = bst.predict( xg_test )
+hyper_class = genRandClass()
+train_labels = genClassLabel(train_out_df, hyper_class)
+# train a tree
+xg_train = xgb.DMatrix(train_ary, label=train_labels)
+watchlist = [ (xg_train,'train')]
+num_round = 500
+bst = xgb.train(param, xg_train, num_round, watchlist );
+# get prediction
+xg_test = xgb.DMatrix(vali_ary)
+hc_pred = bst.predict( xg_test )
     # compute the real products added according to the prediction
-    p_pred += np.dot(hc_pred, hyper_class)
+    # p_pred += hyper_class[tuple(hc_pred.astype(int)), :]
 
-final_prediction = np.zeros(vali_out_df.shape)
-for i in range(0, vali_out_df.shape[0]):
-    seven_positions = np.argpartition(np.array(p_pred[i]), -7)[-7:]
-    final_prediction[i, seven_positions] = 1
-np.savetxt("../input/pred_1130.csv", final_prediction, delimiter=",")
-total_customers = 897377
-score = 0.0
-for i in range(0, vali_out_df.shape[0]):
-    real_array = vali_out_df.ix[i].values
-    s = np.dot(real_array, final_prediction[i])
-    if s != 0:
-        score += s/sum(vali_out_df.ix[i])
-score /= total_customers
-print score
-
-full_prediction = np.ones(vali_out_df.shape[1])
-full_score = 0.0
-for i in range(0, vali_out_df.shape[0]):
-    real_array = vali_out_df.ix[i].values
-    s = np.dot(real_array, full_prediction)
-    if s != 0:
-        full_score += s/sum(vali_out_df.ix[i])
+xgb.plot_importance(bst)
+pyplot.show()
+# final_prediction = np.zeros(vali_out_df.shape)
+# for i in range(0, vali_out_df.shape[0]):
+#     seven_positions = np.argpartition(np.array(p_pred[i]), -7)[-7:]
+#     final_prediction[i, seven_positions] = 1
+# np.savetxt("../input/pred_1130.csv", final_prediction, delimiter=",")
+# total_customers = 897377
+# score = 0.0
+# for i in range(0, vali_out_df.shape[0]):
+#     real_array = vali_out_df.ix[i].values
+#     s = np.dot(real_array, final_prediction[i])
+#     if s != 0:
+#         score += s/sum(vali_out_df.ix[i])
 # score /= total_customers
-print full_score
+# print score
+#
+# full_prediction = np.ones(vali_out_df.shape[1])
+# score = 0.0
+# for i in range(0, vali_out_df.shape[0]):
+#     real_array = vali_out_df.ix[i].values
+#     s = np.dot(real_array, full_prediction)
+#     if s != 0:
+#         score += s/sum(vali_out_df.ix[i])
+# score /= total_customers
+# print score
