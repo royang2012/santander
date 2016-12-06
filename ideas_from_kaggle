@@ -1,0 +1,16 @@
+* Right now there are too many features! some possible ways of dealing with it:
+  1. use feature importance to filter out least important features
+  2. drop unrelavant product history
+  3. someone say that the date has something to do with products added, so maybe add date to the feature list
+
+* someone say that the customer info keeps the same all the time
+
+* someone say that most customers comes from ES, so 'pais_residencia' should be deleted
+
+* 1211 out of 980844 has 'indrel' = 1
+
+* Most of the customers have their birth country different than the bank country
+
+* add total number of products as a feature
+
+* someone says renta is not important
