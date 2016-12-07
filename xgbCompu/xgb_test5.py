@@ -12,14 +12,14 @@ def genRandClass():
     for i in range(0, 4):
         random.shuffle(position_list)
         hyper_class[i, position_list[0: 4]] = 1
-        del position_list[0: 3]
+        del position_list[0: 4]
     return hyper_class
 
 def genClassLabel(input_df, class_set):
     picked_class = np.zeros(input_df.shape[0])
     for i in range(0, input_df.shape[0]):
         # compute the score of each class by dot product
-        class_score = np.dot(input_df.ix[i].values, class_set.transpose())
+        class_score = np.dot(input_df.ix[i].values  , class_set.transpose())
         # the class is assigned where the first '1' lies
         picked_class[i] = np.argmax(class_score)
     return picked_class
@@ -129,11 +129,11 @@ train_out_df = train_out_df2.reset_index(drop=True)
 # delete the country as it generates too many hot vectors
 # organize the data so that each feature row contains all info and 6 months of product
 # data. + 1 is for the total number of products column
-train_prod_ary = np.zeros([train_fea_df.shape[0]/6, class_num*6 +1])
-pred_prod_ary = np.zeros([pred_fea_df.shape[0]/6, class_num*6+1])
+train_prod_ary = np.zeros([train_fea_df.shape[0]/6, class_num*6 + 6])
+pred_prod_ary = np.zeros([pred_fea_df.shape[0]/6, class_num*6+6])
 # re-sample the feature data frame at every 6 rows
-train_fea_df6 = train_fea_df.iloc[::6]
-pred_fea_df6 = pred_fea_df.iloc[::6]
+train_fea_df6 = train_fea_df.iloc[::6].reset_index(drop=True)
+pred_fea_df6 = pred_fea_df.iloc[::6].reset_index(drop=True)
 # find the data type for each column
 # note that here training and validation set share the same input stucture,
 # so we use one label list for both of them
@@ -141,20 +141,28 @@ dtype_list = train_fea_df.dtypes
 train_numerical_list = []
 train_dummy_list = []
 # separate numerical and non-numerical columns
-for i in range(2, info_num): # * the number might vary!
-    if(dtype_list[i] == 'object'):
-        train_dummy_list.append(train_fea_df.columns[i])
-    else:
-        train_numerical_list.append(train_fea_df.columns[i])
+# for i in range(2, info_num): # * the number might vary!
+#     if(dtype_list[i] == 'object'):
+#         train_dummy_list.append(train_fea_df.columns[i])
+#     else:
+#         train_numerical_list.append(train_fea_df.columns[i])
+train_dummy_list = ['fecha_dato','ind_empleado',
+                    'sexo','indrel_1mes','tiprel_1mes',
+                    'indresi','conyuemp','segmento']
+train_numerical_list = ['age','antiguedad','indrel','ind_actividad_cliente',
+                        'renta', 'cod_prov','ind_nuevo']
 train_num_ary = train_fea_df6[train_numerical_list].values
 pred_num_ary = pred_fea_df6[train_numerical_list].values
-train_dum_df = pd.get_dummies(train_fea_df6[train_dummy_list])
-pred_dum_df = pd.get_dummies(pred_fea_df6[train_dummy_list])
+total_df = pd.concat([train_fea_df6[train_dummy_list],
+                      pred_fea_df6[train_dummy_list]])
+dummy_df = pd.get_dummies(total_df[train_dummy_list])
+train_dum_df = dummy_df[0:train_fea_df6.shape[0]]
+pred_dum_df = dummy_df[train_fea_df6.shape[0]:]
 
 train_dum_ary = train_dum_df.values
 # if some value never appear in the training set, then delete it from the test set
-pred_dum_df_selected = pred_dum_df[train_dum_df.columns]
-pred_dum_ary = pred_dum_df_selected.values
+# pred_dum_df_selected = pred_dum_df[train_dum_df.columns]
+pred_dum_ary = pred_dum_df.values
 
 # # # ********************************************* # # #
 # # # set the tree parameters
@@ -173,7 +181,7 @@ param['subsample'] = 0.8
 # # # ********************************************* # # #
 # # # get the hyper-classes labels
 # # # ********************************************* # # #
-num_tree = 20
+num_tree = 1
 num_round = 2000
 p_pred = np.zeros((pred_fea_df.shape[0]/6,16))
 for iter_tree in tqdm(range(0, num_tree)):
@@ -184,11 +192,22 @@ for iter_tree in tqdm(range(0, num_tree)):
     for i in range(0, train_fea_df.shape[0]/6):
         train_prod_ary[i, :-1] = train_classed_ary[6*i: 6*i+6, :].\
             reshape(class_num * 6)
-        train_prod_ary[i, -1] = np.sum(train_fea_df.ix[i, info_num:])
+        train_prod_ary[i, -6] = np.sum(train_fea_df.ix[6*i, info_num:])
+        train_prod_ary[i, -5] = np.sum(train_fea_df.ix[6*i+1, info_num:])
+        train_prod_ary[i, -4] = np.sum(train_fea_df.ix[6*i+2, info_num:])
+        train_prod_ary[i, -3] = np.sum(train_fea_df.ix[6*i+3, info_num:])
+        train_prod_ary[i, -2] = np.sum(train_fea_df.ix[6*i+4, info_num:])
+        train_prod_ary[i, -1] = np.sum(train_fea_df.ix[6*i+5, info_num:])
     for i in range(0, pred_fea_df.shape[0]/6):
         pred_prod_ary[i, :-1] = pred_classed_ary[6*i: 6*i+6, :].\
             reshape(class_num * 6)
         pred_prod_ary[i, -1] = np.sum(pred_fea_df.ix[i, info_num:])
+        pred_prod_ary[i, -6] = np.sum(pred_prod_ary.ix[6*i, info_num:])
+        pred_prod_ary[i, -5] = np.sum(pred_prod_ary.ix[6*i+1, info_num:])
+        pred_prod_ary[i, -4] = np.sum(pred_prod_ary.ix[6*i+2, info_num:])
+        pred_prod_ary[i, -3] = np.sum(pred_prod_ary.ix[6*i+3, info_num:])
+        pred_prod_ary[i, -2] = np.sum(pred_prod_ary.ix[6*i+4, info_num:])
+        pred_prod_ary[i, -1] = np.sum(pred_prod_ary.ix[6*i+5, info_num:])
 
     # concatenate all features(products, info) into one array
     train_ary = np.concatenate((train_prod_ary, train_num_ary, train_dum_ary), axis=1)
