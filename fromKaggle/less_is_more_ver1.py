@@ -388,8 +388,8 @@ if __name__ == "__main__":
     for i in tqdm(range(0, pred_fea_df6.shape[0])):
         pred_prod_ary[i,:-2] = pred_fea_df.ix[6 * i: 6 * i + 1, info_num:].\
             values.reshape(product_num*2)
-        pred_prod_ary[i, -2] = total_train_prod[6*i]
-        pred_prod_ary[i, -1] = total_train_prod[6*i+1]
+        pred_prod_ary[i, -2] = total_pred_prod[6*i]
+        pred_prod_ary[i, -1] = total_pred_prod[6*i+1]
         pred_fea_element = np.concatenate(
             (pred_prod_ary[i], pred_num_ary[i], pred_dum_ary[i]))
         # one_p = np.where(train_out_df.ix[i].values==1)
