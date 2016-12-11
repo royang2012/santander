@@ -183,19 +183,19 @@ def processData(in_file_name, cust_dict):
 
 
 
-def runXGB(train_X, train_y, seed_val=0):
+def runXGB(train_X, train_y, r, seed_val=0 ):
     param = {}
     param['objective'] = 'multi:softprob'
-    param['eta'] = 0.035
-    param['max_depth'] = 9
+    param['eta'] = 0.1
+    param['max_depth'] = 5
     param['silent'] = 1
     param['num_class'] = 20
     param['eval_metric'] = "mlogloss"
-    param['min_child_weight'] = 1.2
+    param['min_child_weight'] = 1
     param['subsample'] = 0.7
     param['colsample_bytree'] = 0.7
     param['seed'] = seed_val
-    num_rounds = 5000
+    num_rounds = r
 
     plst = list(param.items())
     xg_train = xgb.DMatrix(train_X, label=train_y)
@@ -381,8 +381,7 @@ if __name__ == "__main__":
     # print("Building model..")
     train_X = np.array(train_fea_list)
     train_y = np.array(train_out_list)
-    model = runXGB(train_X, train_y, seed_val=0)
-    # generate the prediction set with non-repeated attibutes
+    # generate the prediction set with non-repeated attributes
     pred_fea_list = []
     pred_prod_ary = np.zeros([pred_fea_df.shape[0], product_num*2+2])
     for i in tqdm(range(0, pred_fea_df6.shape[0])):
@@ -395,33 +394,36 @@ if __name__ == "__main__":
         # one_p = np.where(train_out_df.ix[i].values==1)
         # this_element = train_fea_element * one_p.shape[0]
         pred_fea_list.append(pred_fea_element)
-    # del train_X, train_y
     pred_X = np.array(pred_fea_list)
-    print("Predicting..")
     xgtest = xgb.DMatrix(pred_X)
-    preds = model.predict(xgtest)
-    # preds = preds[:, 0:16]
-    # del test_X, xgtest
-    # print(datetime.datetime.now() - start_time)
 
-    # print("Getting the top products..")
-    # target_cols = np.array(target_cols)
-    target_cols = np.array(train_fea_df.columns[16:])
-    preds_s = np.argsort(preds, axis=1)
-    preds_s = np.fliplr(preds_s)[:, :7]
-    test_id = np.array(pd.read_csv("../input/test_ver2.csv", usecols=['ncodpers'])['ncodpers'])
-    final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
-    predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
-                                 , 'added_products': final_preds})
-    # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
-    # out_df.to_csv('sub_xgb_new.csv', index=False)
-    # print(datetime.datetime.now() - start_time)
-    test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
-    # pred_idx_df = pred_fea_df6.reset_index(drop=True)
-    merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
-    high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
-                              "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
-                              "ind_recibo_ult1"
-    null_list = np.where(merged_df.added_products.isnull().values==1)[0]
-    merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
-    merged_df.to_csv('../output/sub_161210_1.csv', index=False)
+    # tuning
+    for i in range(400, 1100, 300):
+        model = runXGB(train_X, train_y, i, seed_val=0)
+        preds = model.predict(xgtest)
+        # preds = preds[:, 0:16]
+        # del test_X, xgtest
+        # print(datetime.datetime.now() - start_time)
+
+        # print("Getting the top products..")
+        # target_cols = np.array(target_cols)
+        target_cols = np.array(train_fea_df.columns[16:])
+        preds_s = np.argsort(preds, axis=1)
+        preds_s = np.fliplr(preds_s)[:, :7]
+        test_id = np.array(pd.read_csv("../input/test_ver2.csv", usecols=['ncodpers'])['ncodpers'])
+        final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
+        predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
+                                     , 'added_products': final_preds})
+        # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
+        # out_df.to_csv('sub_xgb_new.csv', index=False)
+        # print(datetime.datetime.now() - start_time)
+        test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
+        # pred_idx_df = pred_fea_df6.reset_index(drop=True)
+        merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
+        high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
+                                  "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
+                                  "ind_recibo_ult1"
+        null_list = np.where(merged_df.added_products.isnull().values==1)[0]
+        merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
+        file_name = '../output/sub_161211_' + str(i) + '.csv'
+        merged_df.to_csv(file_name, index=False)

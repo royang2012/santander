@@ -185,22 +185,22 @@ def processData(in_file_name, cust_dict):
 
 def runXGB(train_X, train_y, seed_val=0):
     param = {}
-    param['objective'] = 'multi:softprob'
-    param['eta'] = 0.035
-    param['max_depth'] = 9
+    # param['objective'] = 'multi:softprob'
+    param['eta'] = 0.1
+    param['max_depth'] = 5
     param['silent'] = 1
     param['num_class'] = 20
-    param['eval_metric'] = "mlogloss"
-    param['min_child_weight'] = 1.2
+    # param['eval_metric'] = "mlogloss"
+    param['min_child_weight'] = 1
     param['subsample'] = 0.7
     param['colsample_bytree'] = 0.7
     param['seed'] = seed_val
-    num_rounds = 5000
+    num_rounds = 400
 
     plst = list(param.items())
     xg_train = xgb.DMatrix(train_X, label=train_y)
     watchlist = [ (xg_train,'train')]
-    model = xgb.train(plst, xg_train, num_rounds, watchlist)
+    model = xgb.train(plst, xg_train, num_rounds, watchlist, myMultiLogi)
     return model
 
 def deleteFeatures(input_df):
@@ -227,6 +227,16 @@ def deleteProducts(input_df):
 def convertNum(intput_df):
     intput_df['age'] = pd.to_numeric(intput_df['age'], errors='coerce')
     intput_df['antiguedad'] = pd.to_numeric(intput_df['antiguedad'], errors='coerce')
+
+def myMultiLogi(preds, dtrain):
+    label_scalar = dtrain.get_label()
+    labels = np.zeros([label_scalar.shape[0], 20])
+    labels[np.arange(0, label_scalar.shape[0]), train_y] = 1
+    preds = 1.0 / (1.0 + np.exp(-preds))
+    print preds.shape, labels.shape
+    grad = np.sum(preds - labels, axis=1)
+    hess = np.sum(preds * (1.0-preds), axis=1)
+    return grad, hess
 
 if __name__ == "__main__":
     # start_time = datetime.datetime.now()
@@ -378,9 +388,12 @@ if __name__ == "__main__":
             if train_out_df.ix[i, j] == 1:
                 train_fea_list.append(train_fea_element)
                 train_out_list.append(j)
+
     # print("Building model..")
     train_X = np.array(train_fea_list)
     train_y = np.array(train_out_list)
+    # train_Y = np.zeros([train_X.shape[0], product_num])
+    # train_Y[np.arange(0,len(train_y)), train_y] = 1
     model = runXGB(train_X, train_y, seed_val=0)
     # generate the prediction set with non-repeated attibutes
     pred_fea_list = []

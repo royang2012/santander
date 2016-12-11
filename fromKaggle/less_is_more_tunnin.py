@@ -11,6 +11,9 @@ import xgboost as xgb
 from sklearn import preprocessing, ensemble
 import sqlite3 as sql
 from tqdm import tqdm
+from xgboost.sklearn import XGBClassifier
+from sklearn import cross_validation, metrics   #Additional scklearn functions
+from sklearn.grid_search import GridSearchCV   #Perforing grid search
 
 mapping_dict = {
     'ind_empleado': {-99: 0, 'N': 1, 'B': 2, 'F': 3, 'A': 4, 'S': 5},
@@ -189,13 +192,13 @@ def runXGB(train_X, train_y, seed_val=0):
     param['eta'] = 0.035
     param['max_depth'] = 9
     param['silent'] = 1
-    param['num_class'] = 20
+    param['num_class'] = 22
     param['eval_metric'] = "mlogloss"
-    param['min_child_weight'] = 1.2
+    # param['min_child_weight'] = 1
     param['subsample'] = 0.7
     param['colsample_bytree'] = 0.7
     param['seed'] = seed_val
-    num_rounds = 5000
+    num_rounds = 2000
 
     plst = list(param.items())
     xg_train = xgb.DMatrix(train_X, label=train_y)
@@ -228,26 +231,29 @@ def convertNum(intput_df):
     intput_df['age'] = pd.to_numeric(intput_df['age'], errors='coerce')
     intput_df['antiguedad'] = pd.to_numeric(intput_df['antiguedad'], errors='coerce')
 
+def modelfit(alg, train_X, train_y,useTrainCV=True, cv_folds=5, early_stopping_rounds=50):
+
+    if useTrainCV:
+        xgb_param = alg.get_xgb_params()
+        xgtrain = xgb.DMatrix(train_X, label=train_y)
+        cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=alg.get_params()['n_estimators'], nfold=cv_folds,
+            metrics='mlogloss', early_stopping_rounds=early_stopping_rounds)
+        alg.set_params(n_estimators=cvresult.shape[0])
+
+    #Fit the algorithm on the data
+    alg.fit(train_X, train_y, eval_metric='mlogloss')
+
+    #Predict training set:
+    dtrain_predictions = alg.predict(train_X)
+    # dtrain_predprob = alg.predict_proba(train_X)[:,1]
+
+    #Print model report:
+    print "\nModel Report"
+    print "Accuracy : %.4g" % metrics.accuracy_score(train_y, dtrain_predictions)
+    # print "AUC Score (Train): %f" % metrics.roc_auc_score(dtrain['Disbursed'], dtrain_predprob)
+
+
 if __name__ == "__main__":
-    # start_time = datetime.datetime.now()
-    # data_path = "../input/"
-    # train_file = open(data_path + "train_ver2.csv")
-    # x_vars_list, y_vars_list, cust_dict = processData(train_file, {})
-    # train_X = np.array(x_vars_list)
-    # train_y = np.array(y_vars_list)
-    # print(np.unique(train_y))
-    # del x_vars_list, y_vars_list
-    # train_file.close()
-    # print(train_X.shape, train_y.shape)
-    # print(datetime.datetime.now() - start_time)
-    # test_file = open(data_path + "test_ver2.csv")
-    # x_vars_list, y_vars_list, cust_dict = processData(test_file, cust_dict)
-    # test_X = np.array(x_vars_list)
-    # del x_vars_list
-    # test_file.close()
-    # print(test_X.shape)
-    # print(datetime.datetime.now() - start_time)
-    # my part
     product_num = 20
     info_num = 16
     class_num = 4
@@ -381,47 +387,65 @@ if __name__ == "__main__":
     # print("Building model..")
     train_X = np.array(train_fea_list)
     train_y = np.array(train_out_list)
-    model = runXGB(train_X, train_y, seed_val=0)
+    xgb1 = XGBClassifier(
+        learning_rate=0.01,
+        n_estimators=4000,
+        max_depth=8,
+        min_child_weight=1,
+        gamma=0,
+        subsample=0.7,
+        colsample_bytree=0.7,
+        objective='multi:softprob',
+        # nthread=4,
+        scale_pos_weight=1,
+        seed=0)
+    early_stopping = 50
+    xgb_param = xgb1.get_xgb_params()
+    xgtrain = xgb.DMatrix(train_X, label=train_y)
+    cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=xgb1.get_params()['n_estimators'], nfold=5,
+                  metrics='mlogloss', early_stopping_rounds=early_stopping)
+    xgb1.set_params(n_estimators=cvresult.shape[0])
+    modelfit(xgb1, train_X, train_y)
     # generate the prediction set with non-repeated attibutes
-    pred_fea_list = []
-    pred_prod_ary = np.zeros([pred_fea_df.shape[0], product_num*2+2])
-    for i in tqdm(range(0, pred_fea_df6.shape[0])):
-        pred_prod_ary[i,:-2] = pred_fea_df.ix[6 * i: 6 * i + 1, info_num:].\
-            values.reshape(product_num*2)
-        pred_prod_ary[i, -2] = total_pred_prod[6*i]
-        pred_prod_ary[i, -1] = total_pred_prod[6*i+1]
-        pred_fea_element = np.concatenate(
-            (pred_prod_ary[i], pred_num_ary[i], pred_dum_ary[i]))
-        # one_p = np.where(train_out_df.ix[i].values==1)
-        # this_element = train_fea_element * one_p.shape[0]
-        pred_fea_list.append(pred_fea_element)
-    # del train_X, train_y
-    pred_X = np.array(pred_fea_list)
-    print("Predicting..")
-    xgtest = xgb.DMatrix(pred_X)
-    preds = model.predict(xgtest)
+    # pred_fea_list = []
+    # pred_prod_ary = np.zeros([pred_fea_df.shape[0], product_num*2+2])
+    # for i in tqdm(range(0, pred_fea_df6.shape[0])):
+    #     pred_prod_ary[i,:-2] = pred_fea_df.ix[6 * i: 6 * i + 1, info_num:].\
+    #         values.reshape(product_num*2)
+    #     pred_prod_ary[i, -2] = total_pred_prod[6*i]
+    #     pred_prod_ary[i, -1] = total_pred_prod[6*i+1]
+    #     pred_fea_element = np.concatenate(
+    #         (pred_prod_ary[i], pred_num_ary[i], pred_dum_ary[i]))
+    #     # one_p = np.where(train_out_df.ix[i].values==1)
+    #     # this_element = train_fea_element * one_p.shape[0]
+    #     pred_fea_list.append(pred_fea_element)
+    # # del train_X, train_y
+    # pred_X = np.array(pred_fea_list)
+    # print("Predicting..")
+    # xgtest = xgb.DMatrix(pred_X)
+    # # preds = model.predict(xgtest)
     # preds = preds[:, 0:16]
     # del test_X, xgtest
     # print(datetime.datetime.now() - start_time)
 
     # print("Getting the top products..")
     # target_cols = np.array(target_cols)
-    target_cols = np.array(train_fea_df.columns[16:])
-    preds_s = np.argsort(preds, axis=1)
-    preds_s = np.fliplr(preds_s)[:, :7]
-    test_id = np.array(pd.read_csv("../input/test_ver2.csv", usecols=['ncodpers'])['ncodpers'])
-    final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
-    predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
-                                 , 'added_products': final_preds})
-    # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
-    # out_df.to_csv('sub_xgb_new.csv', index=False)
-    # print(datetime.datetime.now() - start_time)
-    test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
-    # pred_idx_df = pred_fea_df6.reset_index(drop=True)
-    merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
-    high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
-                              "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
-                              "ind_recibo_ult1"
-    null_list = np.where(merged_df.added_products.isnull().values==1)[0]
-    merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
-    merged_df.to_csv('../output/sub_161210_1.csv', index=False)
+    # target_cols = np.array(train_fea_df.columns[16:])
+    # preds_s = np.argsort(preds, axis=1)
+    # preds_s = np.fliplr(preds_s)[:, :7]
+    # test_id = np.array(pd.read_csv("../input/test_ver2.csv", usecols=['ncodpers'])['ncodpers'])
+    # final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
+    # predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
+    #                              , 'added_products': final_preds})
+    # # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
+    # # out_df.to_csv('sub_xgb_new.csv', index=False)
+    # # print(datetime.datetime.now() - start_time)
+    # test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
+    # # pred_idx_df = pred_fea_df6.reset_index(drop=True)
+    # merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
+    # high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
+    #                           "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
+    #                           "ind_recibo_ult1"
+    # null_list = np.where(merged_df.added_products.isnull().values==1)[0]
+    # merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
+    # merged_df.to_csv('../output/sub_161209.csv', index=False)
