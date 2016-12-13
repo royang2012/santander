@@ -45,3 +45,6 @@ single product xgb: 0.0258140298522
 most important features: renta, antiguedad, age, cod_prov
 
 1548840
+
+In case of 20 binary tress, the parameters are kinda different for each of them, you have to
+tune them separately
