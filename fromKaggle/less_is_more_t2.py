@@ -398,7 +398,7 @@ if __name__ == "__main__":
     xgtest = xgb.DMatrix(pred_X)
 
     # tuning
-    for i in range(400, 1100, 300):
+    for i in range(500, 1200, 300):
         model = runXGB(train_X, train_y, i, seed_val=0)
         preds = model.predict(xgtest)
         # preds = preds[:, 0:16]
