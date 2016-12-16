@@ -5,7 +5,7 @@ import sqlite3 as sql
 from tqdm import tqdm
 import numpy as np
 import random
-
+import time
 
 def deleteFeatures(input_df):
     # delete unwanted columns
@@ -134,8 +134,8 @@ param['silent'] = 1
 # param['num_class'] = 4
 param['colsample_bytree'] = 0.8
 param['subsample'] = 0.8
-
-num_round = 350
+param['seed'] = 0
+num_round = 50
 p_pred = np.zeros((vali_fea_df.shape[0]/6,product_num))
 train_prod_ary = np.zeros([train_fea_df.shape[0]/6, 12])
 pred_prod_ary = np.zeros([vali_fea_df.shape[0]/6, 12])
@@ -171,6 +171,8 @@ for iter_products in tqdm(range(0, product_num)):
     hc_pred = bst.predict(xg_test, ntree_limit=bst.best_ntree_limit)
     # compute the real products added according to the prediction
     p_pred[:, iter_products] += hc_pred
+    time.sleep(0.5)
+    print train_fea_df.columns[info_num + iter_products]
 
 # np.savetxt("../input/pred_1205.csv", p_pred, delimiter=",")
 

@@ -40,6 +40,7 @@ ind_recibo_ult1      26615.0
 trivial prediction score at 2016-05-28: 0.025134363818105434
 all-right prediction score: 0.0261852042118
 single product xgb: 0.0258140298522
+single product xgb with 12 depth and gamma 6: 0.0258710850252
 
 1201_composition of the features: 0-95 are products. 96-102 are num, 103-211 are dummy
 most important features: renta, antiguedad, age, cod_prov
@@ -48,3 +49,5 @@ most important features: renta, antiguedad, age, cod_prov
 
 In case of 20 binary tress, the parameters are kinda different for each of them, you have to
 tune them separately
+
+By first ensemble + conservative constrains, 0.0264337
