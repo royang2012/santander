@@ -60,16 +60,16 @@ prov_opp_map = lambda x: dict_prov_opp[x]
 def runXGB(train_X, train_y, train_weight, r, seed_val ):
     param = {}
     param['objective'] = 'multi:softprob'
-    param['eta'] = 0.05
-    param['max_depth'] = 9
+    param['eta'] = 0.08
+    param['max_depth'] = 5
     param['silent'] = 1
     param['num_class'] = 20
     param['eval_metric'] = "mlogloss"
-    param['min_child_weight'] = 1
+    # param['min_child_weight'] = 1
     param['subsample'] = 0.7
     param['colsample_bytree'] = 0.7
     param['seed'] = seed_val
-    param['gamma'] = 2
+    # param['gamma'] = 2
     num_rounds = r
 
     plst = list(param.items())

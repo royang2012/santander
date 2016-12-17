@@ -218,67 +218,67 @@ if __name__ == "__main__":
     vali_X = np.array(vali_fea_list)
     xgtest = xgb.DMatrix(vali_X)
 
-    # # # ************************************************# # #
-    # # # show feature importance
-    # # # ************************************************# # #
-    # param = {}
-    # param['objective'] = 'multi:softprob'
-    # param['eta'] = 0.1
-    # param['max_depth'] = 9
-    # param['silent'] = 1
-    # param['num_class'] = 20
-    # param['eval_metric'] = "mlogloss"
-    # param['min_child_weight'] = 1
-    # param['subsample'] = 0.7
-    # param['colsample_bytree'] = 0.7
-    # param['seed'] = 0
-    # # param['gamma'] = 2
-    # num_rounds = 250
-    #
-    # plst = list(param.items())
-    # xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
-    # watchlist = [(xg_train, 'train')]
-    # bst=xgb.train(plst, xg_train, 200, watchlist)
-    # xgb.plot_importance(bst)
-    # pyplot.show()
+    # # ************************************************# # #
+    # # show feature importance
+    # # ************************************************# # #
+    param = {}
+    param['objective'] = 'multi:softprob'
+    param['eta'] = 0.1
+    param['max_depth'] = 9
+    param['silent'] = 1
+    param['num_class'] = 20
+    param['eval_metric'] = "mlogloss"
+    param['min_child_weight'] = 1
+    param['subsample'] = 0.7
+    param['colsample_bytree'] = 0.7
+    param['seed'] = 0
+    # param['gamma'] = 2
+    num_rounds = 250
 
-    cv_list = []
-    for depth in range(3, 16, 3):
-        param = {}
-        param['objective'] = 'multi:softprob'
-        param['eta'] = 0.1
-        param['max_depth'] = depth
-        param['silent'] = 1
-        param['num_class'] = 20
-        param['eval_metric'] = "mlogloss"
-        param['min_child_weight'] = 1
-        param['subsample'] = 0.7
-        param['colsample_bytree'] = 0.7
-        param['seed'] = 0
-        # param['gamma'] = 2
-        num_rounds = 200
-
-        plst = list(param.items())
-        xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
-        cv1 = xgb.cv(plst, xg_train, 250, nfold=5, seed = 0)
-        cv_list.append(cv1)
-
+    plst = list(param.items())
+    xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
     watchlist = [(xg_train, 'train')]
-    model = xgb.train(plst, xg_train, num_rounds, watchlist)
+    bst=xgb.train(plst, xg_train, 200, watchlist)
+    xgb.plot_importance(bst)
+    pyplot.show()
 
-    preds = model.predict(xgtest)
-
-    final_prediction = np.zeros(vali_out_df.shape)
-    for i in range(0, vali_out_df.shape[0]):
-        seven_positions = np.argpartition(np.array(preds[i]), -7)[-7:]
-        final_prediction[i, seven_positions] = 1
-    # np.savetxt("../input/pred_1130.csv", final_prediction, delimiter=",")
-    total_customers = 897377
-    score = 0.0
-    for i in range(0, vali_out_df.shape[0]):
-        real_array = vali_out_df.ix[i].values
-        s = np.dot(real_array, final_prediction[i])
-        if s != 0:
-            score += s/sum(vali_out_df.ix[i])
-    score /= total_customers
-    print score
+    # cv_list = []
+    # for depth in range(3, 16, 3):
+    #     param = {}
+    #     param['objective'] = 'multi:softprob'
+    #     param['eta'] = 0.1
+    #     param['max_depth'] = depth
+    #     param['silent'] = 1
+    #     param['num_class'] = 20
+    #     param['eval_metric'] = "mlogloss"
+    #     param['min_child_weight'] = 1
+    #     param['subsample'] = 0.7
+    #     param['colsample_bytree'] = 0.7
+    #     param['seed'] = 0
+    #     # param['gamma'] = 2
+    #     num_rounds = 200
+    #
+    #     plst = list(param.items())
+    #     xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
+    #     cv1 = xgb.cv(plst, xg_train, 250, nfold=5, seed = 0)
+    #     cv_list.append(cv1)
+    #
+    # watchlist = [(xg_train, 'train')]
+    # model = xgb.train(plst, xg_train, num_rounds, watchlist)
+    #
+    # preds = model.predict(xgtest)
+    #
+    # final_prediction = np.zeros(vali_out_df.shape)
+    # for i in range(0, vali_out_df.shape[0]):
+    #     seven_positions = np.argpartition(np.array(preds[i]), -7)[-7:]
+    #     final_prediction[i, seven_positions] = 1
+    # # np.savetxt("../input/pred_1130.csv", final_prediction, delimiter=",")
+    # total_customers = 897377
+    # score = 0.0
+    # for i in range(0, vali_out_df.shape[0]):
+    #     real_array = vali_out_df.ix[i].values
+    #     s = np.dot(real_array, final_prediction[i])
+    #     if s != 0:
+    #         score += s/sum(vali_out_df.ix[i])
+    # score /= total_customers
+    # print score
