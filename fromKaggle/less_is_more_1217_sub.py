@@ -11,6 +11,8 @@ from sklearn import preprocessing, ensemble
 import sqlite3 as sql
 from tqdm import tqdm
 from collections import defaultdict
+from matplotlib import pyplot
+
 # a dictionary that maps country to its development condition
 # home is home country, wd means well-developed, ld:less-developed, di:developing
 dict_country = {'ES': 'home', 'FR': 'wd', 'IT': 'wd', 'GB': 'wd', 'DE': 'wd', 'CR': 'di','PT': 'ld', 'US': 'wd', 'CH': 'ld', 'MX': 'ld', 'MA': 'di', 'CL': 'di','NL': 'wd', 'KE': 'di', 'BR': 'ld', 'AR': 'ld', 'AT': 'wd', 'IN': 'di','BE': 'wd', 'AU': 'wd', 'PA': 'ld', 'VE': 'di', 'BO': 'di', 'GR': 'ld','ZA': 'ld', 'RU': 'ld', 'JP': 'wd', 'CN': 'ld', 'SG': 'wd', 'NG': 'di','NZ': 'wd', 'PE': 'di', 'DK': 'wd', 'NO': 'wd', 'AE': 'ld', 'TR': 'ld','GA': 'di', 'CO': 'ld', 'CA': 'wd', 'AD': 'wd', 'BY': 'ld', 'HK': 'wd','IE': 'wd',
@@ -58,7 +60,7 @@ prov_opp_map = lambda x: dict_prov_opp[x]
 def runXGB(train_X, train_y, train_weight, r, seed_val ):
     param = {}
     param['objective'] = 'multi:softprob'
-    param['eta'] = 0.1
+    param['eta'] = 0.05
     param['max_depth'] = 9
     param['silent'] = 1
     param['num_class'] = 20
@@ -336,3 +338,5 @@ if __name__ == "__main__":
     merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
     file_name = '../output/sub_161216.csv'
     merged_df.to_csv(file_name, index=False)
+    xgb.plot_importance(model)
+    pyplot.show()
