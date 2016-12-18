@@ -38,8 +38,8 @@ date_reduce_map = lambda x: dict_date[x]
 def runXGB(train_X, train_y, train_weight, r, seed_val=0):
     param = {}
     param['objective'] = 'multi:softprob'
-    param['eta'] = 0.1
-    param['max_depth'] = 5
+    param['eta'] = 0.05
+    param['max_depth'] = 9
     param['silent'] = 1
     param['num_class'] = 20
     param['eval_metric'] = "mlogloss"
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     vali_X = np.array(vali_fea_list)
     xgtest = xgb.DMatrix(vali_X)
 
-    model = runXGB(train_X, train_y, train_weight, 250, seed_val=0)
+    model = runXGB(train_X, train_y, train_weight, 220, seed_val=0)
     preds = model.predict(xgtest)
 
     final_prediction = np.zeros(vali_out_df.shape)
