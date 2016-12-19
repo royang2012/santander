@@ -160,7 +160,7 @@ if __name__ == "__main__":
     #         train_dummy_list.append(train_fea_df.columns[i])
     #     else:
     #         train_numerical_list.append(train_fea_df.columns[i])
-    train_dummy_list = ['date', 'ind_empleado', 'ind_actividad_cliente',
+    train_dummy_list = ['date', 'ind_empleado', 'ind_actividad_cliente', 'pais_residencia',
                         'sexo', 'indrel_1mes', 'tiprel_1mes', 'indrel',
                         'indresi', 'conyuemp', 'segmento', 'country']
     train_numerical_list = ['age', 'antiguedad',
@@ -247,8 +247,8 @@ if __name__ == "__main__":
     # pyplot.show()
 
     cv_list = []
-    for nr in range(100, 500, 100):
-        lr = 20.0/nr
+    for depth in range(5, 15, 2):
+        lr = 0.01
         param = {}
         param['objective'] = 'multi:softprob'
         param['eta'] = lr
@@ -260,8 +260,8 @@ if __name__ == "__main__":
         param['subsample'] = 0.7
         param['colsample_bytree'] = 0.7
         param['seed'] = 0
-        # param['gamma'] = 2
-        num_rounds = nr
+        param['gamma'] = 2
+        nr = 200
 
         plst = list(param.items())
         xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
