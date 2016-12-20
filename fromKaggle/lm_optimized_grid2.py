@@ -20,7 +20,8 @@ dict_country = {'ES': 'home', 'FR': 'wd', 'IT': 'wd', 'GB': 'wd', 'DE': 'wd', 'C
 
 country_reduce_map = lambda x: dict_country[x]
 
-dict_date = {'2016-05-28': 'May', '2016-02-28': 'Feb', '2016-01-28': 'Jan','2015-12-28': 'Dec', '2015-11-28': 'Nov', '2015-10-28': 'OCT','2015-09-28': 'Sep', '2015-08-28': 'Aug', '2015-07-28': 'Jul','2015-06-28': 'Jun', '2015-05-28': 'May', '2015-04-28': 'Apr','2015-03-28': 'Mar', '2015-02-28': 'Feb', '2015-01-28': 'Jan','2016-03-28': 'Mar', '2016-06-28': 'Jun', '2016-04-28': 'Apr'}
+dict_date = defaultdict(lambda: 'May')
+dict_date['2016-05-28']= 'May'; dict_date['2016-02-28']='Feb'; dict_date['2016-01-28']='Jan'; dict_date['2015-12-28']= 'Dec'; dict_date['2015-11-28']= 'Nov'; dict_date['2015-10-28']= 'OCT'; dict_date['2015-09-28']= 'Sep'; dict_date['2015-08-28']= 'Aug'; dict_date['2015-07-28']= 'Jul';dict_date['2015-06-28']= 'Jun';dict_date['2015-05-28']= 'May'; dict_date['2015-04-28']= 'Apr';dict_date['2015-03-28']= 'Mar';dict_date['2015-02-28']= 'Feb';dict_date['2015-01-28']= 'Jan'; dict_date['2016-03-28']= 'Mar'; dict_date['2016-06-28']= 'Jun'; dict_date['2016-04-28']= 'Apr'
 
 date_reduce_map = lambda x: dict_date[x]
 
@@ -51,8 +52,25 @@ dict_prov_opp["OURENSE"]=  0.000919687 ;dict_prov_opp["PALENCIA"]=  0.001170202 
 
 prov_opp_map = lambda x: dict_prov_opp[x]
 
-def runXGB(train_X, train_y, train_weight, r, seed_val=0):
+def runXGB(train_X, train_y, train_weight, r, seed_val ):
+    param = {}
+    param['objective'] = 'multi:softprob'
+    param['eta'] = 0.08
+    param['max_depth'] = 13
+    param['silent'] = 1
+    param['num_class'] = 20
+    param['eval_metric'] = "mlogloss"
+    # param['min_child_weight'] = 1
+    param['subsample'] = 0.7
+    param['colsample_bytree'] = 0.7
+    param['seed'] = seed_val
+    param['gamma'] = 2
+    num_rounds = r
 
+    plst = list(param.items())
+    xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
+    watchlist = [ (xg_train,'train')]
+    model = xgb.train(plst, xg_train, num_rounds, watchlist)
     return model
 
 
@@ -64,7 +82,7 @@ def deleteFeatures(input_df):
     # del input_df['nomprov']
     # delete more data!
     del input_df['indext']
-    del input_df['indfall']
+    # del input_df['indfall']
     del input_df['tipodom']
 
 
@@ -91,14 +109,40 @@ if __name__ == "__main__":
     connectionPath = "../santander_data.db"
     santanderCon = sql.connect(connectionPath)
 
+    # deal with the prediction part
+    pred_fea_df = pd.read_csv("../input/pred_his2.csv")
+                              # dtype={'ind_ahor_fin_ult1':int, 'ind_aval_fin_ult1': int,
+                              #        'ind_cco_fin_ult1':int, 'ind_cder_fin_ult1':int,
+                              #        'ind_cno_fin_ult1':int, 'ind_ctju_fin_ult1':int,
+                              #        'ind_ctma_fin_ult1':int, 'ind_ctop_fin_ult1':int,
+                              #        'ind_ctpp_fin_ult1':int, 'ind_deco_fin_ult1':int,
+                              #        'ind_deme_fin_ult1':int, 'ind_dela_fin_ult1':int,
+                              #        'ind_ecue_fin_ult1':int, 'ind_fond_fin_ult1':int,
+                              #        'ind_hip_fin_ult1':int, 'ind_plan_fin_ult1':int,
+                              #        'ind_pres_fin_ult1':int, 'ind_reca_fin_ult1':int,
+                              #        'ind_tjcr_fin_ult1':int, 'ind_valo_fin_ult1':int,
+                              #        'ind_viv_fin_ult1':int, 'ind_nomina_ult1': int,
+                              #        'ind_nom_pens_ult1': int, 'ind_recibo_ult1': int
+                              #        })
+    del pred_fea_df['Unnamed: 0']
+    del pred_fea_df['index']
+    # del pred_fea_df['pais_residencia']
+    deleteProducts(pred_fea_df)
+    deleteFeatures(pred_fea_df)
+    convertNum(pred_fea_df)
+    pred_fea_df.set_value(pred_fea_df['indrel_1mes']==1, 'indrel_1mes', '1.0')
+    pred_fea_df.set_value(pred_fea_df['indrel_1mes']==2, 'indrel_1mes', '2.0')
+    pred_fea_df.set_value(pred_fea_df['indrel_1mes']==3, 'indrel_1mes', '3.0')
+    pred_fea_df.set_value(pred_fea_df['indrel_1mes']==4, 'indrel_1mes', '4.0')
+
     # deal with the training part
-    select_train_feature = "select * from santander_feature6_train"
+    select_train_feature = "select * from santander_feature2_train"
     train_fea_df = pd.read_sql(select_train_feature, santanderCon)
-    select_train_out = "select * from santander_out_train"
+    select_train_out = "select * from santander_out2_train"
     train_out_df = pd.read_sql(select_train_out, santanderCon)
-    select_vali_feature = "select * from santander_feature6_vali"
+    select_vali_feature = "select * from santander_feature2_vali"
     vali_fea_df = pd.read_sql(select_vali_feature, santanderCon)
-    select_vali_out = "select * from santander_out_vali"
+    select_vali_out = "select * from santander_out2_vali"
     vali_out_df = pd.read_sql(select_vali_out, santanderCon)
     # some raw pre-processing of the data
     del train_fea_df['level_0']
@@ -114,10 +158,16 @@ if __name__ == "__main__":
     del vali_out_df['index']
     deleteProducts(vali_out_df)
 
-    train_fea_df['country'] = train_fea_df['pais_residencia'].map(country_reduce_map)
-    vali_fea_df['country'] = vali_fea_df['pais_residencia'].map(country_reduce_map)
+    train_fea_df.set_value(train_fea_df['renta']==101490.5, 'renta', np.nan)
+    vali_fea_df.set_value(vali_fea_df['renta']==101490.5, 'renta', np.nan)
+    pred_fea_df.set_value(pred_fea_df['renta']==101490.5, 'renta', np.nan)
+
+    # train_fea_df['country'] = train_fea_df['pais_residencia'].map(country_reduce_map)
+    # vali_fea_df['country'] = vali_fea_df['pais_residencia'].map(country_reduce_map)
     train_fea_df['date'] = train_fea_df['fecha_dato'].map(date_reduce_map)
     vali_fea_df['date'] = vali_fea_df['fecha_dato'].map(date_reduce_map)
+    # pred_fea_df['country'] = pred_fea_df['pais_residencia'].map(country_reduce_map)
+    pred_fea_df['date'] = pred_fea_df['fecha_dato'].map(date_reduce_map)
 
     # deal with province name
     train_fea_df[train_fea_df['nomprov'].isnull()].nomprov = train_fea_df.ix[0, 'nomprov']
@@ -130,14 +180,26 @@ if __name__ == "__main__":
     vali_fea_df['opa'] = vali_fea_df['nomprov'].map(prov_opa_map)
     vali_fea_df['opp'] = vali_fea_df['nomprov'].map(prov_opp_map)
     vali_fea_df['gdp'] = vali_fea_df['nomprov'].map(prov_gdp_map)
+    pred_fea_df[pred_fea_df['nomprov'].isnull()].nomprov = pred_fea_df.ix[0, 'nomprov']
+    pred_fea_df['office'] = pred_fea_df['nomprov'].map(prov_off_map)
+    pred_fea_df['opa'] = pred_fea_df['nomprov'].map(prov_opa_map)
+    pred_fea_df['opp'] = pred_fea_df['nomprov'].map(prov_opp_map)
+    pred_fea_df['gdp'] = pred_fea_df['nomprov'].map(prov_gdp_map)
 
     convertNum(train_fea_df)
     convertNum(vali_fea_df)
     # re organize the columns
     current_cols = train_fea_df.columns.tolist()
-    target_cols = current_cols[-6:] + current_cols[:-6]
+    target_cols = current_cols[-5:] + current_cols[:-5]
     train_fea_df = train_fea_df[target_cols]
     vali_fea_df = vali_fea_df[target_cols]
+    pred_fea_df = pred_fea_df[target_cols]
+    # concatenate two train dfs
+    train_fea_df2 = pd.concat([train_fea_df, vali_fea_df])
+    train_fea_df = train_fea_df2.reset_index(drop=True)
+    train_out_df2 = pd.concat([train_out_df, vali_out_df])
+    train_out_df = train_out_df2.reset_index(drop=True)
+
     # # # ********************************************* # # #
     # # # prepare the data from xgb trees
     # # # ********************************************* # # #
@@ -146,8 +208,8 @@ if __name__ == "__main__":
     # data. + 1 is for the total number of products column
 
     # re-sample the feature data frame at every 6 rows
-    train_fea_df6 = train_fea_df.iloc[::6].reset_index(drop=True)
-    vali_fea_df6 = vali_fea_df.iloc[::6].reset_index(drop=True)
+    train_fea_df6 = train_fea_df.iloc[::2].reset_index(drop=True)
+    pred_fea_df6 = pred_fea_df.iloc[::2].reset_index(drop=True)
     # find the data type for each column
     # note that here training and validation set share the same input stucture,
     # so we use one label list for both of them
@@ -160,26 +222,25 @@ if __name__ == "__main__":
     #         train_dummy_list.append(train_fea_df.columns[i])
     #     else:
     #         train_numerical_list.append(train_fea_df.columns[i])
-    train_dummy_list = ['date', 'ind_empleado', 'ind_actividad_cliente', 'pais_residencia',
-                        'sexo', 'indrel_1mes', 'tiprel_1mes', 'indrel',
-                        'indresi', 'conyuemp', 'segmento', 'country']
-    train_numerical_list = ['age', 'antiguedad',
-                            'renta', 'ind_nuevo', 'office', 'opa', 'gdp', 'opp']
+    train_dummy_list = ['date', 'ind_actividad_cliente', 'indfall', 'pais_residencia', 'indrel_1mes','indresi',
+                        'sexo', 'tiprel_1mes', 'indrel', 'conyuemp', 'segmento']
+    train_numerical_list = ['age', 'antiguedad', 'cod_prov',
+                            'renta', 'office', 'opa', 'gdp', 'opp']
     train_num_ary = train_fea_df6[train_numerical_list].values
-    vali_num_ary = vali_fea_df6[train_numerical_list].values
+    pred_num_ary = pred_fea_df6[train_numerical_list].values
     total_df = pd.concat([train_fea_df6[train_dummy_list],
-                          vali_fea_df6[train_dummy_list]])
+                          pred_fea_df6[train_dummy_list]])
     dummy_df = pd.get_dummies(total_df[train_dummy_list])
     train_dum_df = dummy_df[0:train_fea_df6.shape[0]]
-    vali_dum_df = dummy_df[train_fea_df6.shape[0]:]
+    pred_dum_df = dummy_df[train_fea_df6.shape[0]:]
 
     train_dum_ary = train_dum_df.values
     # if some value never appear in the training set, then delete it from the test set
     # pred_dum_df_selected = pred_dum_df[train_dum_df.columns]
-    vali_dum_ary = vali_dum_df.values
+    pred_dum_ary = pred_dum_df.values
     # compute the total number of products for each month
     total_train_prod = np.sum(train_fea_df.ix[:, info_num:].values, axis=1)
-    total_vali_prod = np.sum(vali_fea_df.ix[:, info_num:].values, axis=1)
+    total_pred_prod = np.sum(pred_fea_df.ix[:, info_num:].values, axis=1)
     train_weight_i = 1.0/np.sum(train_out_df, axis=1)
     # vali_weight_i = 1.0/np.sum(vali_out_df, axis=1)
     train_fea_list = []
@@ -187,10 +248,10 @@ if __name__ == "__main__":
     train_weight_list = []
     train_prod_ary = np.zeros([train_out_df.shape[0], product_num * 2 + 2])
     for i in tqdm(range(0, train_out_df.shape[0])):
-        train_prod_ary[i, :-2] = train_fea_df.ix[6 * i: 6 * i + 1, info_num:]. \
+        train_prod_ary[i, :-2] = train_fea_df.ix[2 * i: 2 * i + 1, info_num:]. \
             values.reshape(product_num * 2)
-        train_prod_ary[i, -2] = total_train_prod[6 * i]
-        train_prod_ary[i, -1] = total_train_prod[6 * i + 1]
+        train_prod_ary[i, -2] = total_train_prod[2 * i]
+        train_prod_ary[i, -1] = total_train_prod[2 * i + 1]
         train_fea_element = np.concatenate(
             (train_prod_ary[i], train_num_ary[i], train_dum_ary[i]))
         # one_p = np.where(train_out_df.ix[i].values==1)
@@ -207,83 +268,92 @@ if __name__ == "__main__":
     train_y = np.array(train_out_list)
     train_weight = np.array(train_weight_list)
     # generate the prediction set with non-repeated attributes
-    vali_fea_list = []
-    vali_prod_ary = np.zeros([vali_fea_df.shape[0], product_num * 2 + 2])
-    for i in tqdm(range(0, vali_fea_df6.shape[0])):
-        vali_prod_ary[i, :-2] = vali_fea_df.ix[6 * i: 6 * i + 1, info_num:]. \
+    pred_fea_list = []
+    pred_prod_ary = np.zeros([pred_fea_df.shape[0], product_num * 2 + 2])
+    for i in tqdm(range(0, pred_fea_df6.shape[0])):
+        pred_prod_ary[i, :-2] = pred_fea_df.ix[2 * i: 2 * i + 1, info_num:]. \
             values.reshape(product_num * 2)
-        vali_prod_ary[i, -2] = total_vali_prod[6 * i]
-        vali_prod_ary[i, -1] = total_vali_prod[6 * i + 1]
-        vali_fea_element = np.concatenate(
-            (vali_prod_ary[i], vali_num_ary[i], vali_dum_ary[i]))
+        pred_prod_ary[i, -2] = total_pred_prod[2 * i]
+        pred_prod_ary[i, -1] = total_pred_prod[2 * i + 1]
+        pred_fea_element = np.concatenate(
+            (pred_prod_ary[i], pred_num_ary[i], pred_dum_ary[i]))
         # one_p = np.where(train_out_df.ix[i].values==1)
         # this_element = train_fea_element * one_p.shape[0]
-        vali_fea_list.append(vali_fea_element)
-    vali_X = np.array(vali_fea_list)
-    xgtest = xgb.DMatrix(vali_X)
+        pred_fea_list.append(pred_fea_element)
+    pred_X = np.array(pred_fea_list)
+    xgtest = xgb.DMatrix(pred_X)
 
-    # # # ************************************************# # #
-    # # # show feature importance
-    # # # ************************************************# # #
-    # param = {}
-    # param['objective'] = 'multi:softprob'
-    # param['eta'] = 0.1
-    # param['max_depth'] = 9
-    # param['silent'] = 1
-    # param['num_class'] = 20
-    # param['eval_metric'] = "mlogloss"
-    # param['min_child_weight'] = 1
-    # param['subsample'] = 0.7
-    # param['colsample_bytree'] = 0.7
-    # param['seed'] = 0
-    # # param['gamma'] = 2
-    # num_rounds = 250
-    #
-    # plst = list(param.items())
-    # xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
-    # watchlist = [(xg_train, 'train')]
-    # bst=xgb.train(plst, xg_train, 200, watchlist)
+    preds = np.zeros([pred_X.shape[0], product_num])
+    for i in range(0, 1200, 1200):
+        model = runXGB(train_X, train_y, train_weight, 200, seed_val=i)
+        preds += model.predict(xgtest)
+        # preds = preds[:, 0:16]
+        # del test_X, xgtest
+        # print(datetime.datetime.now() - start_time)
+
+        # print("Getting the top products..")
+        # target_cols = np.array(target_cols)
+    target_cols = np.array(train_fea_df.columns[info_num:])
+    preds_s = np.argsort(preds, axis=1)
+    preds_s = np.fliplr(preds_s)[:, :7]
+
+    final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
+    predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
+                                 , 'added_products': final_preds})
+    # # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
+    # # out_df.to_csv('sub_xgb_new.csv', index=False)
+    # # print(datetime.datetime.now() - start_time)
+    # test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
+    # # pred_idx_df = pred_fea_df6.reset_index(drop=True)
+    # merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
+    # high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
+    #                           "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
+    #                           "ind_recibo_ult1"
+    # null_list = np.where(merged_df.added_products.isnull().values==1)[0]
+    # merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
+    file_name = '../output/sub_161218_' + str(13)+ str(200) + '.csv'
+    predicted_df.to_csv(file_name, index=False)
     # xgb.plot_importance(bst)
     # pyplot.show()
-
-    cv_list = []
-    for depth in range(5, 15, 2):
-        lr = 0.01
-        param = {}
-        param['objective'] = 'multi:softprob'
-        param['eta'] = lr
-        param['max_depth'] = 9
-        param['silent'] = 1
-        param['num_class'] = 20
-        param['eval_metric'] = "mlogloss"
-        param['min_child_weight'] = 1
-        param['subsample'] = 0.7
-        param['colsample_bytree'] = 0.7
-        param['seed'] = 0
-        param['gamma'] = 2
-        nr = 200
-
-        plst = list(param.items())
-        xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
-        cv1 = xgb.cv(plst, xg_train, nr, nfold=5, seed = 0)
-        cv_list.append(cv1)
-
-    watchlist = [(xg_train, 'train')]
-    model = xgb.train(plst, xg_train, num_rounds, watchlist)
-
-    preds = model.predict(xgtest)
-
-    final_prediction = np.zeros(vali_out_df.shape)
-    for i in range(0, vali_out_df.shape[0]):
-        seven_positions = np.argpartition(np.array(preds[i]), -7)[-7:]
-        final_prediction[i, seven_positions] = 1
-    # np.savetxt("../input/pred_1130.csv", final_prediction, delimiter=",")
-    total_customers = 897377
-    score = 0.0
-    for i in range(0, vali_out_df.shape[0]):
-        real_array = vali_out_df.ix[i].values
-        s = np.dot(real_array, final_prediction[i])
-        if s != 0:
-            score += s/sum(vali_out_df.ix[i])
-    score /= total_customers
-    print score
+    #
+    # cv_list = []
+    # for depth in range(5, 15, 2):
+    #     lr = 0.01
+    #     param = {}
+    #     param['objective'] = 'multi:softprob'
+    #     param['eta'] = lr
+    #     param['max_depth'] = 9
+    #     param['silent'] = 1
+    #     param['num_class'] = 20
+    #     param['eval_metric'] = "mlogloss"
+    #     param['min_child_weight'] = 1
+    #     param['subsample'] = 0.7
+    #     param['colsample_bytree'] = 0.7
+    #     param['seed'] = 0
+    #     param['gamma'] = 2
+    #     nr = 200
+    #
+    #     plst = list(param.items())
+    #     xg_train = xgb.DMatrix(train_X, label=train_y, weight=train_weight)
+    #     cv1 = xgb.cv(plst, xg_train, nr, nfold=5, seed = 0)
+    #     cv_list.append(cv1)
+    #
+    # watchlist = [(xg_train, 'train')]
+    # model = xgb.train(plst, xg_train, num_rounds, watchlist)
+    #
+    # preds = model.predict(xgtest)
+    #
+    # final_prediction = np.zeros(vali_out_df.shape)
+    # for i in range(0, vali_out_df.shape[0]):
+    #     seven_positions = np.argpartition(np.array(preds[i]), -7)[-7:]
+    #     final_prediction[i, seven_positions] = 1
+    # # np.savetxt("../input/pred_1130.csv", final_prediction, delimiter=",")
+    # total_customers = 897377
+    # score = 0.0
+    # for i in range(0, vali_out_df.shape[0]):
+    #     real_array = vali_out_df.ix[i].values
+    #     s = np.dot(real_array, final_prediction[i])
+    #     if s != 0:
+    #         score += s/sum(vali_out_df.ix[i])
+    # score /= total_customers
+    # print score
