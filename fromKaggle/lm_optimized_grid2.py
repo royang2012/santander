@@ -52,11 +52,11 @@ dict_prov_opp["OURENSE"]=  0.000919687 ;dict_prov_opp["PALENCIA"]=  0.001170202 
 
 prov_opp_map = lambda x: dict_prov_opp[x]
 
-def runXGB(train_X, train_y, train_weight, r, seed_val ):
+def runXGB(train_X, train_y, train_weight, r, depth, seed_val ):
     param = {}
     param['objective'] = 'multi:softprob'
-    param['eta'] = 0.08
-    param['max_depth'] = 13
+    param['eta'] = 0.075
+    param['max_depth'] = depth
     param['silent'] = 1
     param['num_class'] = 20
     param['eval_metric'] = "mlogloss"
@@ -284,35 +284,37 @@ if __name__ == "__main__":
     xgtest = xgb.DMatrix(pred_X)
 
     preds = np.zeros([pred_X.shape[0], product_num])
-    for i in range(0, 1200, 1200):
-        model = runXGB(train_X, train_y, train_weight, 200, seed_val=i)
-        preds += model.predict(xgtest)
-        # preds = preds[:, 0:16]
-        # del test_X, xgtest
-        # print(datetime.datetime.now() - start_time)
+    for depth in range(15, 17, 1):
+        for nr in range(190, 191, 29):
+            for i in range(1400, 2401, 200):
+                model = runXGB(train_X, train_y, train_weight, nr, depth, seed_val=i)
+                preds += model.predict(xgtest)
+                # preds = preds[:, 0:16]
+                # del test_X, xgtest
+                # print(datetime.datetime.now() - start_time)
 
-        # print("Getting the top products..")
-        # target_cols = np.array(target_cols)
-    target_cols = np.array(train_fea_df.columns[info_num:])
-    preds_s = np.argsort(preds, axis=1)
-    preds_s = np.fliplr(preds_s)[:, :7]
+                # print("Getting the top products..")
+                # target_cols = np.array(target_cols)
+            target_cols = np.array(train_fea_df.columns[info_num:])
+            preds_s = np.argsort(preds, axis=1)
+            preds_s = np.fliplr(preds_s)[:, :7]
 
-    final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
-    predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
-                                 , 'added_products': final_preds})
-    # # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
-    # # out_df.to_csv('sub_xgb_new.csv', index=False)
-    # # print(datetime.datetime.now() - start_time)
-    # test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
-    # # pred_idx_df = pred_fea_df6.reset_index(drop=True)
-    # merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
-    # high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
-    #                           "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
-    #                           "ind_recibo_ult1"
-    # null_list = np.where(merged_df.added_products.isnull().values==1)[0]
-    # merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
-    file_name = '../output/sub_161218_' + str(13)+ str(200) + '.csv'
-    predicted_df.to_csv(file_name, index=False)
+            final_preds = [" ".join(list(target_cols[pred])) for pred in preds_s]
+            predicted_df = pd.DataFrame({'ncodpers': pred_fea_df6.ncodpers.values
+                                         , 'added_products': final_preds})
+            # # out_df = pd.DataFrame({'ncodpers': test_id, 'added_products': final_preds})
+            # # out_df.to_csv('sub_xgb_new.csv', index=False)
+            # # print(datetime.datetime.now() - start_time)
+            # test_idx_df = pd.read_sql("select ncodpers from santander_test order by ncodpers", santanderCon)
+            # # pred_idx_df = pred_fea_df6.reset_index(drop=True)
+            # merged_df = pd.merge(test_idx_df, predicted_df, how='left', on='ncodpers')
+            # high_frequency_products = "ind_cco_fin_ult1 ind_cno_fin_ult1 ind_ecue_fin_ult1 " \
+            #                           "ind_ecue_fin_ult1 ind_nomina_ult1 ind_nom_pens_ult1 " \
+            #                           "ind_recibo_ult1"
+            # null_list = np.where(merged_df.added_products.isnull().values==1)[0]
+            # merged_df.ix[null_list[0], 'added_products'] = high_frequency_products
+            file_name = '../output/sub_161218_' + str(depth)+ str(nr) + '.csv'
+            predicted_df.to_csv(file_name, index=False)
     # xgb.plot_importance(bst)
     # pyplot.show()
     #
